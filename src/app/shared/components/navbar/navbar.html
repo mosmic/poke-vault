@@ -1,0 +1,42 @@
+<header
+  class="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/80"
+>
+  <nav
+    class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3"
+    aria-label="Main navigation"
+  >
+    <!-- Logo -->
+    <a
+      routerLink="/"
+      class="flex items-center gap-2 text-xl font-bold text-red-500 dark:text-red-400"
+      aria-label="PokeVault home"
+    >
+      <span aria-hidden="true">⚡</span>
+      <span>PokeVault</span>
+    </a>
+
+    <!-- Desktop links -->
+    <ul class="hidden items-center gap-1 md:flex" role="list">
+      @for (link of links; track link.path) {
+        <li>
+          <a
+            [routerLink]="link.path"
+            [class]="
+              isActive(link.path)
+                ? 'flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                : 'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+            "
+            [attr.aria-current]="isActive(link.path) ? 'page' : null"
+          >
+            <span aria-hidden="true">{{ link.icon }}</span>
+            {{ link.label }}
+          </a>
+        </li>
+      }
+    </ul>
+
+    <div class="flex items-center gap-2">
+      <app-theme-toggle />
+    </div>
+  </nav>
+</header>
