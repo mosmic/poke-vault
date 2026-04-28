@@ -1,4 +1,4 @@
-import { effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 type Theme = 'light' | 'dark';
@@ -11,7 +11,7 @@ export class ThemeStore {
   private readonly _theme = signal<Theme>(this.resolveInitialTheme());
 
   readonly theme = this._theme.asReadonly();
-  readonly isDark = signal(this._theme() === 'dark');
+  readonly isDark = computed(() => this._theme() === 'dark');
 
   constructor() {
     effect(() => {

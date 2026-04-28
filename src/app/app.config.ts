@@ -9,6 +9,9 @@ import {
 
 import { routes } from './app.routes';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideStore } from '@ngrx/store';
+import { PokemonEffects, pokemonReducer } from './state/pokemon';
+import { provideEffects } from '@ngrx/effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,5 +26,7 @@ export const appConfig: ApplicationConfig = {
       withFetch(), // uses fetch() instead of XHR — better for SSR
       withInterceptors([]),
     ),
+    provideStore({ pokemon: pokemonReducer }),
+    provideEffects(PokemonEffects),
   ],
 };
