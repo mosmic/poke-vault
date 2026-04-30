@@ -1,0 +1,152 @@
+<main class="mx-auto max-w-7xl px-4 py-8">
+  <!-- Page header -->
+  <div class="mb-8">
+    <h1 class="mb-1 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+      Pokémon Explorer
+    </h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+      Browse, search, and filter all known Pokémon
+    </p>
+  </div>
+
+  <!-- Controls bar -->
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <!-- Search — [(value)] two-way binds parent signal to child model() -->
+    <div class="w-full sm:max-w-sm">
+      <app-search-bar [(value)]="searchQuery" />
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Type filter -->
+      <select
+        [value]="typeFilter()"
+        (change)="setTypeFilter($any($event.target).value)"
+        aria-label="Filter by Pokémon type"
+        class="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/30 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+      >
+        <option value="">All types</option>
+        @for (type of availableTypes(); track type) {
+          <option [value]="type">{{ type | titlecase }}</option>
+        }
+      </select>
+
+      <!-- View mode toggle — @switch demonstrates multi-branch template logic -->
+      <button
+        (click)="toggleViewMode()"
+        [attr.aria-label]="viewMode() === 'grid' ? 'Switch to list view' : 'Switch to grid view'"
+        class="rounded-xl border border-gray-300 p-2 transition hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+      >
+        @switch (viewMode()) {
+          @case ('grid') {
+            <svg
+              class="h-5 w-5 text-gray-600 dark:text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 10h16M4 14h16M4 18h16"
+              />
+            </svg>
+          }
+          @case ('list') {
+            <svg
+              class="h-5 w-5 text-gray-600 dark:text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 5a1 1 0 011-1h4a1 1 0 010 2H5a1 1 0 01-1-1zm0 7a1 1 0 011-1h4a1 1 0 010 2H5a1 1 0 01-1-1zm0 7a1 1 0 011-1h4a1 1 0 010 2H5a1 1 0 01-1-1zm6-14h9a1 1 0 010 2h-9a1 1 0 010-2zm0 7h9a1 1 0 010 2h-9a1 1 0 010-2zm0 7h9a1 1 0 010 2h-9a1 1 0 010-2z"
+              />
+            </svg>
+          }
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Error banner -->
+  @if (error()) {
+    <div
+      role="alert"
+      class="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
+    >
+      <svg
+        class="h-5 w-5 flex-shrink-0"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+        />
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Empty state -->
+  @if (isEmpty()) {
+    <div class="flex flex-col items-center justify-center gap-4 py-24 text-center">
+      <span class="text-7xl" aria-hidden="true">🌫️</span>
+      <p class="text-xl font-semibold text-gray-800 dark:text-gray-200">No Pokémon found</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filter</p>
+    </div>
+  }
+
+  <!-- Cards container — [class] binding switches grid/flex layout -->
+  <div [class]="gridClass()">
+    @for (card of visibleCards(); track card.id) {
+      <!--
+        @defer (on viewport):
+        The PokemonCardComponent JS module is NOT loaded until the @placeholder
+        element scrolls into the viewport. Off-screen cards have zero JS cost.
+        Angular uses the placeholder root element as the IntersectionObserver anchor.
+      -->
+      @defer (on viewport) {
+        <app-pokemon-card
+          [pokemon]="card"
+          [isFavorite]="favoritesStore.isFavorite(card.id)"
+          (toggleFavorite)="toggleFavorite($event)"
+        />
+      } @placeholder (minimum 150ms) {
+        <app-skeleton-card />
+      } @loading (minimum 300ms) {
+        <app-skeleton-card />
+      } @error {
+        <div
+          class="flex items-center justify-center rounded-2xl border border-red-200 bg-red-50 p-8 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
+        >
+          Failed to load card
+        </div>
+      }
+    }
+
+    <!-- Skeletons appended during an active loadMore() call -->
+    @if (loading()) {
+      @for (n of loadingSkeletons; track n) {
+        <app-skeleton-card />
+      }
+    }
+  </div>
+
+  <!--
+    Sentinel div — watched by IntersectionObserver.
+    When this element enters the viewport (user near bottom),
+    the component dispatches PokemonActions.loadMore().
+  -->
+  <div #sentinel class="h-4 w-full" aria-hidden="true"></div>
+</main>
