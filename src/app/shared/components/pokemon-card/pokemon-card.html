@@ -1,0 +1,69 @@
+<article
+  class="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
+>
+  <!-- Favorite toggle — stopPropagation prevents link navigation -->
+  <button
+    (click)="$event.preventDefault(); toggleFavorite.emit(pokemon().id)"
+    [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
+    class="absolute right-3 top-3 z-10 transition-transform hover:scale-125"
+  >
+    @if (isFavorite()) {
+      <svg class="h-5 w-5 text-red-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path
+          d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+        />
+      </svg>
+    } @else {
+      <svg
+        class="h-5 w-5 text-gray-300 transition-colors group-hover:text-red-400 dark:text-gray-600"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+        />
+      </svg>
+    }
+  </button>
+
+  <!-- Navigable card area -->
+  <a
+    [routerLink]="['/pokemon', pokemon().id]"
+    class="flex flex-1 flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+    [attr.aria-label]="'View details for ' + formattedName()"
+  >
+    <!-- ID badge -->
+    <span class="absolute left-3 top-3 font-mono text-xs text-gray-400 dark:text-gray-500">
+      {{ paddedId() }}
+    </span>
+
+    <!-- Sprite -->
+    <div class="flex items-center justify-center bg-gray-50 p-4 dark:bg-gray-700/50">
+      <img
+        [src]="pokemon().imageUrl"
+        [alt]="formattedName()"
+        loading="lazy"
+        width="120"
+        height="120"
+        class="h-28 w-28 object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-110"
+      />
+    </div>
+
+    <!-- Body -->
+    <div class="flex flex-1 flex-col gap-2 p-4 pt-3">
+      <h2 class="text-base font-bold text-gray-900 dark:text-white">
+        {{ formattedName() }}
+      </h2>
+      <div class="flex flex-wrap gap-1.5">
+        @for (type of pokemon().types; track type) {
+          <app-type-badge [type]="type" />
+        }
+      </div>
+    </div>
+  </a>
+</article>
